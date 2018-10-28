@@ -41,3 +41,5 @@ stop          B stop ; stop program
 
 
 Here LT and GE are inverse to each other.
+
+In the second code, all the instructions are consistent with the IT instruction. So no error is expected here.
