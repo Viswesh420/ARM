@@ -141,8 +141,12 @@ STOP		   VLDR s0 ,[r0]  ; stop program
 
 
 OUTPUT     VLDR.F32 s16 , =0.5
+		   MOV R5 ,#0X20000000
+		   VSTR S3 ,[R5]
+		   LDR R0 ,[R5]
+		   BL printMsg
            VCMP.F32     s3 , s16  
-           VMRS r1 , FPSCR                    
+           VMRS r1 , FPSCR                    ;output is kept  in r0 .LOGIC LSL AND CMP ARE APPLIED ON FPSR FLAGS WHOOSE VALUE IS IN R1
            MOV r2 , #1
 		   LSL r2 , r2 ,#31
 		   AND r1 , r1, r2
@@ -150,7 +154,42 @@ OUTPUT     VLDR.F32 s16 , =0.5
 		   ITE  HI
 		   MOVHI r0 , #0
 		   MOVLS r0 , #1
-		   BL printMsg
-stop       B   stop		   
+           LSL R7 , R7 ,#1
+		   ORR R7 , R7 ,R0
+		  ADR.W r8 , Table_Byte		  
+		  TBB [r8 , r9 ]		  		  
+input2    VLDR.F32 s0 , =1 ;X0 DATA
+          VLDR.F32 s1 , =0 ;X1 DATA
+          VLDR.F32 s2 , =1 ;X2 DATA
+          ADD r9 , r9 , #1                   ;r1 will take number to select logic .0-Nand ,1-Nor like that		  
+		  B startagain
+		  
+input3    VLDR.F32 s0 , =1 ;X0 DATA
+          VLDR.F32 s1 , =1 ;X1 DATA
+          VLDR.F32 s2 , =0 ;X2 DATA		  
+		  ADD r9 , r9 , #1                   ;r1 will take number to select logic .0-Nand ,1-Nor like that
+		  B startagain
+		  
+input4    VLDR.F32 s0 , =1 ;X0 DATA
+          VLDR.F32 s1 , =1 ;X1 DATA
+          VLDR.F32 s2 , =1 ;X2 DATA
+		  ADD r9 , r9 , #1                   ;r1 will take number to select logic .0-Nand ,1-Nor like that
+          B startagain
+
+
+stop            MOV R0 , R7
+                MOV R7 ,#0	
+                BL Printtruthtable
+				CMP R12 ,#6
+				IT HI
+				BHI stop1
+				ADD R12 ,R12 ,#1
+				B startagain
+stop1           B   stop1	
+Table_Byte		  
+    DCB   0		  
+    DCB   ((input3-input2)/2)	
+	DCB   ((input4-input2)/2)	
+	DCB   ((stop-input2)/2)   
         endfunc
       end
